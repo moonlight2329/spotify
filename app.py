@@ -1,3 +1,10 @@
+import os
+st.write("Root files:", os.listdir())
+if os.path.exists("data"):
+    st.write("Data folder:", os.listdir("data"))
+else:
+    st.write("❌ data folder not found")
+
 # app.py
 # NLP-Based Spotify Music Recommendation System using TF-IDF
 
