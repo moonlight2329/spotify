@@ -1,10 +1,3 @@
-import os
-st.write("Root files:", os.listdir())
-if os.path.exists("data"):
-    st.write("Data folder:", os.listdir("data"))
-else:
-    st.write("❌ data folder not found")
-
 # app.py
 # NLP-Based Spotify Music Recommendation System using TF-IDF
 
@@ -15,6 +8,13 @@ import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
+import os
+st.write("Root files:", os.listdir())
+if os.path.exists("data"):
+    st.write("Data folder:", os.listdir("data"))
+else:
+    st.write("❌ data folder not found")
 
 
 # Uncomment and run once locally if needed
