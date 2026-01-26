@@ -4,12 +4,11 @@
 import streamlit as st
 import pandas as pd
 import re
-import nltk
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
 
 # Uncomment and run once locally if needed
 # nltk.download('stopwords')
@@ -25,8 +24,9 @@ def preprocess_text(text):
     text = str(text).lower()
     text = re.sub(r'[^a-zA-Z ]', '', text)
     tokens = text.split()
-    tokens = [lemmatizer.lemmatize(w) for w in tokens if w not in stop_words]
+    tokens = [w for w in tokens if w not in ENGLISH_STOP_WORDS]
     return ' '.join(tokens)
+
 
 # -----------------------------
 # Load dataset
