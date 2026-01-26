@@ -17,8 +17,6 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 # -----------------------------
 # Text preprocessing setup
 # -----------------------------
-stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
 
 def preprocess_text(text):
     text = str(text).lower()
