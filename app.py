@@ -32,7 +32,8 @@ def preprocess_text(text):
 @st.cache_data
 def load_data():
     # IMPORTANT: adjust column names if needed
-    df = pd.read_csv('data/spotify_data clean.csv')
+    df = pd.read_csv('data/spotify_data_clean.csv')
+
 
     # Example assumption:
     # 'track_name' -> song title
