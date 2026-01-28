@@ -96,8 +96,7 @@ if st.button("Recommend Songs"):
         top_indices = similarity.argsort()[-5:][::-1]
 
         st.subheader("🎧 Recommended Tracks")
-        for idx in top_indices:
-            track = data.iloc[idx]
-            st.write(f"**{track.get('track_name', 'Unknown Track')}**")
-            if 'artist' in data.columns:
-                st.caption(f"Artist: {track['artist']}")
+for idx in top_indices:
+    track = data.iloc[idx]
+    st.write(f"🎵 **{track['Song_Title']}**")
+    st.caption(f"Artist: {track['Artist']}")
