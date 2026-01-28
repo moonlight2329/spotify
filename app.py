@@ -58,7 +58,14 @@ if text_column not in data.columns:
     st.stop()
 
 # Clean text
-data['clean_text'] = data[text_column].apply(preprocess_text)
+data['combined_text'] = (
+    data['track_name'].astype(str) + " " +
+    data['artist'].astype(str) + " " +
+    data['genre'].astype(str)
+)
+
+data['clean_text'] = data['combined_text'].apply(preprocess_text)
+
 
 # -----------------------------
 # TF-IDF model
