@@ -50,7 +50,7 @@ st.dataframe(data.head())
 # Select text column
 # -----------------------------
 # CHANGE this if your dataset uses a different column
-text_column = 'genre'
+text_column = 'Genre'
 
 if text_column not in data.columns:
     st.error(f"❌ Column '{text_column}' not found in dataset")
