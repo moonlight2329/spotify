@@ -91,13 +91,13 @@ if st.button("Recommend Songs"):
     else:
         genre = user_genre.strip().lower()
 
-        # Filter by genre
+        # Filter songs by genre
         filtered = data[data['Genre'].str.lower() == genre]
 
         if filtered.empty:
             st.warning("No songs found for this genre")
         else:
-            # Find top artists in this genre
+            # Identify top artists in this genre
             top_artists = (
                 filtered['Artist']
                 .value_counts()
@@ -105,10 +105,18 @@ if st.button("Recommend Songs"):
                 .index
             )
 
-         recommendations = filtered[filtered['Artist'].isin(top_artists)]
+            # Create recommendations dataframe
+            recommendations = filtered[
+                filtered['Artist'].isin(top_artists)
+            ].copy()
 
             # Sort by popularity if available
             if 'Popularity' in recommendations.columns:
+                recommendations['Popularity'] = pd.to_numeric(
+                    recommendations['Popularity'],
+                    errors='coerce'
+                ).fillna(0)
+
                 recommendations = recommendations.sort_values(
                     by='Popularity',
                     ascending=False
