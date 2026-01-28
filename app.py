@@ -25,7 +25,7 @@ def preprocess_text(text):
 # -----------------------------
 @st.cache_data
 def load_data():
-    file_path = 'data/Popular_Spotify_Songs.csv'
+    file_path = 'data/top_100_spotify_songs_2025.csv'
 
     if not os.path.exists(file_path):
         st.error(f"❌ Dataset not found at {file_path}")
