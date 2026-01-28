@@ -59,7 +59,7 @@ if text_column not in data.columns:
 
 # Clean text
 data['combined_text'] = (
-    data['Song_Title'].astype(str) + " " +
+    data['Rank'].astype(str) + " " +
     data['Artist'].astype(str) + " " +
     data['Genre'].astype(str)
 
@@ -98,6 +98,6 @@ if st.button("Recommend Songs"):
         st.subheader("🎧 Recommended Tracks")
         for idx in top_indices:
             track = data.iloc[idx]
-            st.write(f"🎵 **{track['Song_Title']}**")
+            st.write(f"⭐ **{track['Rank']}**")
             st.caption(f"Artist: {track['Artist']}")
 
