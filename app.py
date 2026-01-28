@@ -59,9 +59,10 @@ if text_column not in data.columns:
 
 # Clean text
 data['combined_text'] = (
-    data['track_name'].astype(str) + " " +
-    data['artist'].astype(str) + " " +
-    data['genre'].astype(str)
+    data['Song_Title'].astype(str) + " " +
+    data['Artist'].astype(str) + " " +
+    data['Genre'].astype(str) + " " +
+    data['Popularity'].astype(str)
 )
 
 data['clean_text'] = data['combined_text'].apply(preprocess_text)
