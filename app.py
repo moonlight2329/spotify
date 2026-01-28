@@ -97,6 +97,7 @@ if st.button("Recommend Songs"):
 
         st.subheader("🎧 Recommended Tracks")
         for idx in top_indices:
-        track = data.iloc[idx]
-        st.write(f"🎵 **{track['Song_Title']}**")
-        st.caption(f"Artist: {track['Artist']}")
+            track = data.iloc[idx]
+            st.write(f"🎵 **{track['Song_Title']}**")
+            st.caption(f"Artist: {track['Artist']}")
+
