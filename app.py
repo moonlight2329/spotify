@@ -83,21 +83,32 @@ vectorizer, tfidf_matrix = build_tfidf(data['clean_text'])
 # User input
 # -----------------------------
 st.subheader("Describe your music taste")
-user_input = st.text_area("Example: energetic pop dance music")
+user_genre = st.text_input("Enter a genre (e.g. pop)")
 
 if st.button("Recommend Songs"):
-    if user_input.strip() == "":
-        st.warning("Please enter some text")
+    if user_genre.strip() == "":
+        st.warning("Please enter a genre")
     else:
-        clean_input = preprocess_text(user_input)
-        user_vec = vectorizer.transform([clean_input])
-        similarity = cosine_similarity(user_vec, tfidf_matrix)[0]
+        genre = user_genre.strip().lower()
 
-        top_indices = similarity.argsort()[-5:][::-1]
+        # Filter by genre
+        filtered = data[data['Genre'].str.lower() == genre]
 
-        st.subheader("🎧 Recommended Tracks")
-        for idx in top_indices:
-            track = data.iloc[idx]
-            st.write(f"⭐ **{track['Rank']}**")
-            st.caption(f"Artist: {track['Artist']}")
+        if filtered.empty:
+            st.warning("No songs found for this genre")
+        else:
+            # Find top artists in this genre
+            top_artists = (
+                filtered['Artist']
+                .value_counts()
+                .head(3)
+                .index
+            )
+
+            st.subheader(f"🎧 Top {genre.title()} Songs")
+
+            for _, row in recommendations.head(5).iterrows():
+                st.write(f"🏅 **{row['Rank']}**")
+                st.caption(f"Artist: {row['Artist']}")
+
 
