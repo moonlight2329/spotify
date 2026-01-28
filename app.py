@@ -1,23 +1,18 @@
 # app.py
-# NLP-Based Spotify Music Recommendation System using TF-IDF
+# NLP-Based Spotify Recommendation System
+# Dataset: data/Popular_Spotify_Songs.csv
 
 import streamlit as st
 import pandas as pd
 import re
+import os
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-
-
-# Uncomment and run once locally if needed
-# nltk.download('stopwords')
-# nltk.download('wordnet')
 
 # -----------------------------
-# Text preprocessing setup
+# Text preprocessing
 # -----------------------------
-
 def preprocess_text(text):
     text = str(text).lower()
     text = re.sub(r'[^a-zA-Z ]', '', text)
@@ -25,66 +20,76 @@ def preprocess_text(text):
     tokens = [w for w in tokens if w not in ENGLISH_STOP_WORDS]
     return ' '.join(tokens)
 
-
 # -----------------------------
-# Load dataset
+# Load dataset safely
 # -----------------------------
 @st.cache_data
 def load_data():
-    # IMPORTANT: adjust column names if needed
-    df = pd.read_csv('spotify_data_clean.csv')
+    file_path = 'data/Popular_Spotify_Songs.csv'
 
+    if not os.path.exists(file_path):
+        st.error(f"❌ Dataset not found at {file_path}")
+        st.stop()
 
-    # Example assumption:
-    # 'track_name' -> song title
-    # 'artist_name' -> artist
-    # 'lyrics' or 'track_genre' -> text feature
-
-    text_column = 'track_genre'  # CHANGE if your dataset uses a different column
-
-    df['clean_text'] = df[text_column].apply(preprocess_text)
+    df = pd.read_csv(file_path)
     return df
-
-# -----------------------------
-# Build TF-IDF model
-# -----------------------------
-@st.cache_data
-def build_tfidf(corpus):
-    vectorizer = TfidfVectorizer(max_features=5000)
-    tfidf_matrix = vectorizer.fit_transform(corpus)
-    return vectorizer, tfidf_matrix
 
 # -----------------------------
 # Streamlit UI
 # -----------------------------
 st.title("🎵 Spotify Music Recommendation System")
-st.write("Recommend songs based on NLP similarity using Spotify metadata.")
+st.write("Personalized music recommendations using NLP and TF-IDF.")
 
 # Load data
-with st.spinner("Loading Spotify dataset..."):
-    data = load_data()
+data = load_data()
 
 st.subheader("Dataset Preview")
 st.dataframe(data.head())
 
-# Build model
+# -----------------------------
+# Select text column
+# -----------------------------
+# CHANGE this if your dataset uses a different column
+text_column = 'genre'
+
+if text_column not in data.columns:
+    st.error(f"❌ Column '{text_column}' not found in dataset")
+    st.write("Available columns:", data.columns.tolist())
+    st.stop()
+
+# Clean text
+data['clean_text'] = data[text_column].apply(preprocess_text)
+
+# -----------------------------
+# TF-IDF model
+# -----------------------------
+@st.cache_data
+def build_tfidf(corpus):
+    vectorizer = TfidfVectorizer(max_features=5000)
+    matrix = vectorizer.fit_transform(corpus)
+    return vectorizer, matrix
+
 vectorizer, tfidf_matrix = build_tfidf(data['clean_text'])
 
+# -----------------------------
 # User input
-st.subheader("Describe your music preference")
-user_input = st.text_area("Example: chill electronic music with soft vocals")
+# -----------------------------
+st.subheader("Describe your music taste")
+user_input = st.text_area("Example: energetic pop dance music")
 
 if st.button("Recommend Songs"):
     if user_input.strip() == "":
-        st.warning("Please enter some text.")
+        st.warning("Please enter some text")
     else:
         clean_input = preprocess_text(user_input)
         user_vec = vectorizer.transform([clean_input])
-        similarity = cosine_similarity(user_vec, tfidf_matrix)
-        top_indices = similarity.argsort()[0][-5:][::-1]
+        similarity = cosine_similarity(user_vec, tfidf_matrix)[0]
 
-        st.subheader("Recommended Tracks")
+        top_indices = similarity.argsort()[-5:][::-1]
+
+        st.subheader("🎧 Recommended Tracks")
         for idx in top_indices:
-            st.write(f"**{data.iloc[idx]['track_name']}**")
-            if 'artist_name' in data.columns:
-                st.caption(f"Artist: {data.iloc[idx]['artist_name']}")
+            track = data.iloc[idx]
+            st.write(f"**{track.get('track_name', 'Unknown Track')}**")
+            if 'artist' in data.columns:
+                st.caption(f"Artist: {track['artist']}")
