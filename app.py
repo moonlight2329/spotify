@@ -61,8 +61,8 @@ if text_column not in data.columns:
 data['combined_text'] = (
     data['Song_Title'].astype(str) + " " +
     data['Artist'].astype(str) + " " +
-    data['Genre'].astype(str) + " " +
-    data['Popularity'].astype(str)
+    data['Genre'].astype(str)
+
 )
 
 data['clean_text'] = data['combined_text'].apply(preprocess_text)
