@@ -105,10 +105,17 @@ if st.button("Recommend Songs"):
                 .index
             )
 
+         recommendations = filtered[filtered['Artist'].isin(top_artists)]
+
+            # Sort by popularity if available
+            if 'Popularity' in recommendations.columns:
+                recommendations = recommendations.sort_values(
+                    by='Popularity',
+                    ascending=False
+                )
+
             st.subheader(f"🎧 Top {genre.title()} Songs")
 
             for _, row in recommendations.head(5).iterrows():
                 st.write(f"🏅 **{row['Rank']}**")
                 st.caption(f"Artist: {row['Artist']}")
-
-
