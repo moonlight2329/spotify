@@ -1,18 +1,17 @@
 # app.py
 # NLP-Based Spotify Recommendation System
-# Dataset: data/Popular_Spotify_Songs.csv
+# Dataset: data/top_100_spotify_songs_2025.csv
 
 import streamlit as st
 import pandas as pd
 import re
 import os
-
+import matplotlib.pyplot as plt
 
 from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
-from sklearn.metrics.pairwise import cosine_similarity
 
 # -----------------------------
-# Text preprocessing
+# Text preprocessing (NLP)
 # -----------------------------
 def preprocess_text(text):
     text = str(text).lower()
@@ -34,14 +33,20 @@ def load_data():
 
     df = pd.read_csv(file_path)
     return df
-    
+
+# -----------------------------
+# Streamlit UI
+# -----------------------------
+st.title("🎵 Spotify Music Recommendation System")
+st.write("Genre-based music recommendation using NLP and popularity ranking.")
+
 # Load data
 data = load_data()
 
-# Ensure Popularity is numeric
-if 'Popularity' in data.columns:
-    data['Popularity'] = pd.to_numeric(
-        data['Popularity'],
+# Ensure Popularity_Score is numeric
+if 'Popularity_Score' in data.columns:
+    data['Popularity_Score'] = pd.to_numeric(
+        data['Popularity_Score'],
         errors='coerce'
     ).fillna(0)
 
@@ -49,69 +54,56 @@ st.subheader("Dataset Preview")
 st.dataframe(data.head())
 
 # -----------------------------
-# Streamlit UI
+# Column validation
 # -----------------------------
-st.title("🎵 Spotify Music Recommendation System")
-st.write("Personalized music recommendations using NLP and TF-IDF.")
+required_columns = ['Song_Title', 'Artist', 'Genre', 'Popularity_Score']
 
-# Load data
-data = load_data()
-
-st.subheader("Dataset Preview")
-st.dataframe(data.head())
-
-# -----------------------------
-# Select text column
-# -----------------------------
-# CHANGE this if your dataset uses a different column
-text_column = 'Genre'
-
-if text_column not in data.columns:
-    st.error(f"❌ Column '{text_column}' not found in dataset")
-    st.write("Available columns:", data.columns.tolist())
+missing_cols = [col for col in required_columns if col not in data.columns]
+if missing_cols:
+    st.error(f"❌ Missing columns: {missing_cols}")
     st.stop()
 
-# Clean text
+# -----------------------------
+# NLP text preparation (optional but academic)
+# -----------------------------
 data['combined_text'] = (
-    data['Rank'].astype(str) + " " +
+    data['Song_Title'].astype(str) + " " +
     data['Artist'].astype(str) + " " +
     data['Genre'].astype(str)
-
 )
 
 data['clean_text'] = data['combined_text'].apply(preprocess_text)
 
-
-# -----------------------------
-# TF-IDF model
-# -----------------------------
 @st.cache_data
 def build_tfidf(corpus):
-    vectorizer = TfidfVectorizer(max_features=5000)
+    vectorizer = TfidfVectorizer(max_features=3000)
     matrix = vectorizer.fit_transform(corpus)
     return vectorizer, matrix
 
 vectorizer, tfidf_matrix = build_tfidf(data['clean_text'])
 
 # -----------------------------
-# User input
+# User Input
 # -----------------------------
-st.subheader("Describe your music taste")
-user_genre = st.text_input("Enter a genre (e.g. pop)")
+st.subheader("🎼 Choose Your Genre")
+user_genre = st.text_input("Enter a genre (e.g. pop, rock, hip hop)")
 
+# -----------------------------
+# Recommendation Logic
+# -----------------------------
 if st.button("Recommend Songs"):
     if user_genre.strip() == "":
         st.warning("Please enter a genre")
     else:
         genre = user_genre.strip().lower()
 
-        # Filter songs by genre
+        # Filter by genre
         filtered = data[data['Genre'].str.lower() == genre]
 
         if filtered.empty:
             st.warning("No songs found for this genre")
         else:
-            # Identify top artists in this genre
+            # Find top artists in this genre
             top_artists = (
                 filtered['Artist']
                 .value_counts()
@@ -119,39 +111,38 @@ if st.button("Recommend Songs"):
                 .index
             )
 
-            # Create recommendations dataframe
+            # Get recommendations
             recommendations = filtered[
                 filtered['Artist'].isin(top_artists)
             ].copy()
 
-            # Sort by popularity
-            if 'Popularity' in recommendations.columns:
-                recommendations = recommendations.sort_values(
-                    by='Popularity',
-                    ascending=False
-                )
+            # Sort by popularity score
+            recommendations = recommendations.sort_values(
+                by='Popularity_Score',
+                ascending=False
+            ).head(5)
 
-            # Limit to top 5
-            recommendations = recommendations.head(5)
-
-            st.subheader(f"🎧 Top {genre.title()} Songs")
+            # -----------------------------
+            # Display Recommendations
+            # -----------------------------
+            st.subheader(f"🎧 Top {genre.title()} Recommendations")
 
             for _, row in recommendations.iterrows():
                 st.write(f"🎵 **{row['Song_Title']}**")
                 st.caption(
                     f"Artist: {row['Artist']} | "
-                    f"Popularity: {row['Popularity']}"
+                    f"Popularity Score: {row['Popularity_Score']}"
                 )
 
             # -----------------------------
             # 📊 Popularity-Based Graph
             # -----------------------------
-            st.subheader("📊 NLP-Based Recommendation Analysis (Popularity)")
+            st.subheader("📊 Recommendation Analysis (Popularity Score)")
 
             fig, ax = plt.subplots()
             ax.barh(
                 recommendations['Song_Title'],
-                recommendations['Popularity']
+                recommendations['Popularity_Score']
             )
             ax.set_xlabel("Popularity Score")
             ax.set_ylabel("Recommended Songs")
