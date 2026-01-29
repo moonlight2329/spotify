@@ -6,6 +6,8 @@ import streamlit as st
 import pandas as pd
 import re
 import os
+import matplotlib.pyplot as plt
+
 
 from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
@@ -33,6 +35,12 @@ def load_data():
 
     df = pd.read_csv(file_path)
     return df
+    
+if 'Popularity' in data.columns:
+    data['Popularity'] = pd.to_numeric(
+        data['Popularity'],
+        errors='coerce'
+    ).fillna(0)
 
 # -----------------------------
 # Streamlit UI
@@ -110,20 +118,37 @@ if st.button("Recommend Songs"):
                 filtered['Artist'].isin(top_artists)
             ].copy()
 
-            # Sort by popularity if available
+            # Sort by popularity
             if 'Popularity' in recommendations.columns:
-                recommendations['Popularity'] = pd.to_numeric(
-                    recommendations['Popularity'],
-                    errors='coerce'
-                ).fillna(0)
-
                 recommendations = recommendations.sort_values(
                     by='Popularity',
                     ascending=False
                 )
 
+            # Limit to top 5
+            recommendations = recommendations.head(5)
+
             st.subheader(f"🎧 Top {genre.title()} Songs")
 
-            for _, row in recommendations.head(5).iterrows():
-                st.write(f"🏅 **{row['Rank']}**")
-                st.caption(f"Artist: {row['Artist']}")
+            for _, row in recommendations.iterrows():
+                st.write(f"🎵 **{row['Song_Title']}**")
+                st.caption(
+                    f"Artist: {row['Artist']} | "
+                    f"Popularity: {row['Popularity']}"
+                )
+
+            # -----------------------------
+            # 📊 Popularity-Based Graph
+            # -----------------------------
+            st.subheader("📊 NLP-Based Recommendation Analysis (Popularity)")
+
+            fig, ax = plt.subplots()
+            ax.barh(
+                recommendations['Song_Title'],
+                recommendations['Popularity']
+            )
+            ax.set_xlabel("Popularity Score")
+            ax.set_ylabel("Recommended Songs")
+            ax.invert_yaxis()
+
+            st.pyplot(fig)
