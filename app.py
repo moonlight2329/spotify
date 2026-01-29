@@ -35,11 +35,18 @@ def load_data():
     df = pd.read_csv(file_path)
     return df
     
+# Load data
+data = load_data()
+
+# Ensure Popularity is numeric
 if 'Popularity' in data.columns:
     data['Popularity'] = pd.to_numeric(
         data['Popularity'],
         errors='coerce'
     ).fillna(0)
+
+st.subheader("Dataset Preview")
+st.dataframe(data.head())
 
 # -----------------------------
 # Streamlit UI
