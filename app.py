@@ -2,7 +2,6 @@
 # NLP-Based Spotify Recommendation System
 # Dataset: data/Popular_Spotify_Songs.csv
 
-import matplotlib.pyplot as plt
 import streamlit as st
 import pandas as pd
 import re
